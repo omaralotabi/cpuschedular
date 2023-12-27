@@ -1,19 +1,36 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 
 using namespace std;
+
+//Linked List To Store Whats Been Readed From The input.txt File
+struct Node {
+    int burstTime;
+    int arrivalTime;
+    int priority;
+    Node* next;
+
+    Node(int b, int a, int p) : burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
+};
+
 //Universal Variables Will Be Here
 bool preemptiveMode = false;
 int schedulingMethodNum;
 int timeQuantum = 0;
-//End Of Universal Variables
+int procNumber = 0;
+
 
 //Functions Declarations
 void cpuSchedulerSimulator();
-//End Of Functions Declarations
+void insertNode(Node*& head, int burstTime, int arrivalTime, int priority);
+void readFromFileAndStore();
+
 
 int main() {
+	readFromFileAndStore();
     cpuSchedulerSimulator();
+    
     return 0;
 }
 
@@ -63,13 +80,15 @@ void cpuSchedulerSimulator() {
 					schedulingMethod = "Priority";
 				}else if(schedulingMethodNum == 5){
 					schedulingMethod = "RR";
+				}else{
+					cout << "Invalid choice. Please try again.\n";
 				}
                 break;
             case 2:
                 preemptiveMode = !preemptiveMode;
                 break;
             case 3:
-                // will do 
+            	
                 break;
             case 4:
                 cout << "Exiting the program.\n";
@@ -78,4 +97,39 @@ void cpuSchedulerSimulator() {
                 cout << "Invalid choice. Please try again.\n";
         }
     }
+}
+
+//Performing Insert Back
+void insertNode(Node*& head, int burstTime, int arrivalTime, int priority) {
+    Node* newNode = new Node(burstTime, arrivalTime, priority);
+    if (head == NULL) {
+        head = newNode;
+        procNumber++;
+    } else {
+        Node* current = head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = newNode;
+        procNumber++;
+    }
+}
+
+void readFromFileAndStore() {
+    ifstream inputFile("input.txt");
+    if (!inputFile.is_open()) {
+        cerr<<"Error opening input.txt file."<<endl;
+        return;
+    }
+
+    Node* head = NULL;
+
+    int burstTime, arrivalTime, priority;
+    char colon;
+
+    while (inputFile >> burstTime >> colon >> arrivalTime >> colon >> priority) {
+        insertNode(head, burstTime, arrivalTime, priority);
+    }
+    inputFile.close();
+
 }
