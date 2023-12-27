@@ -25,6 +25,7 @@ int procNumber = 0;
 void cpuSchedulerSimulator();
 void insertNode(Node*& head, int burstTime, int arrivalTime, int priority);
 void readFromFileAndStore();
+void selectWhichMethod();
 
 
 int main() {
@@ -88,7 +89,7 @@ void cpuSchedulerSimulator() {
                 preemptiveMode = !preemptiveMode;
                 break;
             case 3:
-            	
+            	selectWhichMethod();
                 break;
             case 4:
                 cout << "Exiting the program.\n";
@@ -132,4 +133,27 @@ void readFromFileAndStore() {
     }
     inputFile.close();
 
+}
+
+void selectWhichMethod(){
+	if(schedulingMethodNum==1){
+		cout<<"None Of the Method Were Chosen";
+	}else if(!preemptiveMode && schedulingMethodNum==2){
+		//FCFS Function Will Be Called Here
+	}
+	else if(preemptiveMode && schedulingMethodNum==2){
+		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\n";
+	}else if(!preemptiveMode && schedulingMethodNum==3){
+		//non-preemptive SJF Function Will Be Called Here
+	}else if(preemptiveMode && schedulingMethodNum==3){
+		//preemptive SJF Function Will Be Called Here
+	}else if(!preemptiveMode && schedulingMethodNum==4){
+		//non-preemptive Priority Function Will Be Called Here
+	}else if(preemptiveMode && schedulingMethodNum==4){
+		//preemptive Priority Function Will Be Called Here
+	}else if(!preemptiveMode && schedulingMethodNum==5){
+		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\n";
+	}else if(preemptiveMode && schedulingMethodNum==5){
+		//RR Function Will Be Called Here
+	}
 }
