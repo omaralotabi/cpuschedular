@@ -14,18 +14,21 @@ struct Node {
     Node(int b, int a, int p) : burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
 };
 
-//Universal Variables Will Be Here
+
+//Global Variables
 bool preemptiveMode = false;
 int schedulingMethodNum;
 int timeQuantum = 0;
 int procNumber = 0;
+Node* head = NULL;
 
 
 //Functions Declarations
 void cpuSchedulerSimulator();
-void insertNode(Node*& head, int burstTime, int arrivalTime, int priority);
+void insertNode(int burstTime, int arrivalTime, int priority);
 void readFromFileAndStore();
 void selectWhichMethod();
+void fcfsFunc();
 
 
 int main() {
@@ -101,7 +104,7 @@ void cpuSchedulerSimulator() {
 }
 
 //Performing Insert Back
-void insertNode(Node*& head, int burstTime, int arrivalTime, int priority) {
+void insertNode(int burstTime, int arrivalTime, int priority) {
     Node* newNode = new Node(burstTime, arrivalTime, priority);
     if (head == NULL) {
         head = newNode;
@@ -123,13 +126,12 @@ void readFromFileAndStore() {
         return;
     }
 
-    Node* head = NULL;
 
     int burstTime, arrivalTime, priority;
     char colon;
 
     while (inputFile >> burstTime >> colon >> arrivalTime >> colon >> priority) {
-        insertNode(head, burstTime, arrivalTime, priority);
+        insertNode(burstTime, arrivalTime, priority);
     }
     inputFile.close();
 
@@ -139,21 +141,57 @@ void selectWhichMethod(){
 	if(schedulingMethodNum==1){
 		cout<<"None Of the Method Were Chosen";
 	}else if(!preemptiveMode && schedulingMethodNum==2){
-		//FCFS Function Will Be Called Here
-	}
-	else if(preemptiveMode && schedulingMethodNum==2){
+		fcfsFunc();
+	}else if(preemptiveMode && schedulingMethodNum==2){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\n";
 	}else if(!preemptiveMode && schedulingMethodNum==3){
-		//non-preemptive SJF Function Will Be Called Here
+		
 	}else if(preemptiveMode && schedulingMethodNum==3){
-		//preemptive SJF Function Will Be Called Here
+		
 	}else if(!preemptiveMode && schedulingMethodNum==4){
-		//non-preemptive Priority Function Will Be Called Here
+		
 	}else if(preemptiveMode && schedulingMethodNum==4){
-		//preemptive Priority Function Will Be Called Here
+		
 	}else if(!preemptiveMode && schedulingMethodNum==5){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\n";
 	}else if(preemptiveMode && schedulingMethodNum==5){
-		//RR Function Will Be Called Here
+		
 	}
+}
+
+
+void fcfsFunc() {
+	
+    Node* current = head;
+    int currentTime = 0;
+    int totalWaitingTime = 0;
+    int count=1;
+    ofstream outputFile("output.txt", ios::app);
+    cout<<"Scheduling Method: First Come First Served\n";
+    outputFile<<"Scheduling Method: First Come First Served\n";
+    cout<<"Process Waiting Times:\n";
+    outputFile<<"Process Waiting Times:\n";
+    
+    while (current) {
+        if (current->arrivalTime > currentTime) {
+            currentTime = current->arrivalTime;
+        }
+
+        int waitingTime = currentTime - current->arrivalTime;
+        totalWaitingTime += waitingTime;
+        
+        cout<<"P"<<count<<": "<<waitingTime<<" ms\n";
+        outputFile<<"P"<<count<<": "<<waitingTime<<" ms\n";
+        
+        currentTime += current->burstTime;
+        current = current->next;
+        count++;
+    }
+
+    if (procNumber > 0) {
+        double averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+        cout<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
+        outputFile<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
+    }
+    outputFile.close();
 }
