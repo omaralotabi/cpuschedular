@@ -6,28 +6,42 @@ using namespace std;
 
 //Linked List To Store Whats Been Readed From The input.txt File
 struct Node {
+	int procID;
     int burstTime;
     int arrivalTime;
     int priority;
     Node* next;
 
-    Node(int b, int a, int p) : burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
+    Node(int ID, int b, int a, int p) : procID(ID), burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
+};
+
+//store 
+struct Result {
+	int waitingTime;
+    Result* resultNext;
+
+    Result(int w) : waitingTime(w), resultNext(NULL) {}
 };
 
 
 //Global Variables
 bool preemptiveMode = false;
 int schedulingMethodNum;
+string schedulingMethod;
 int timeQuantum = 0;
 int procNumber = 0;
 Node* head = NULL;
-
+Result* resultHead = NULL;
+double averageWaitingTime;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
-void insertNode(int burstTime, int arrivalTime, int priority);
+void insertNode(int procID, int burstTime, int arrivalTime, int priority);
 void readFromFileAndStore();
 void selectWhichMethod();
+void insertResult(int waitingTime);
+void pritnResults();
+void emptyList();
 void fcfsFunc();
 
 
@@ -39,7 +53,6 @@ int main() {
 }
 
 void cpuSchedulerSimulator() {
-    string schedulingMethod;
 
     while (true) {
         cout<<"\nCPU Scheduler Simulator\n";
@@ -103,9 +116,9 @@ void cpuSchedulerSimulator() {
     }
 }
 
-//Performing Insert Back
-void insertNode(int burstTime, int arrivalTime, int priority) {
-    Node* newNode = new Node(burstTime, arrivalTime, priority);
+//Insert From The Input File (Insert Back)
+void insertNode(int procID, int burstTime, int arrivalTime, int priority) {
+    Node* newNode = new Node(procID, burstTime, arrivalTime, priority);
     if (head == NULL) {
         head = newNode;
         procNumber++;
@@ -119,19 +132,34 @@ void insertNode(int burstTime, int arrivalTime, int priority) {
     }
 }
 
+//Insert The Output Of Scheduling Methods (Insert Back)
+void insertResult(int waitingTime) {
+    Result* newResult = new Result(waitingTime);
+    if (resultHead == NULL) {
+        resultHead = newResult;
+    } else {
+        Result* resultCurrent = resultHead;
+        while (resultCurrent->resultNext != NULL) {
+            resultCurrent = resultCurrent->resultNext;
+        }
+        resultCurrent->resultNext = newResult;
+    }
+}
+
 void readFromFileAndStore() {
     ifstream inputFile("input.txt");
     if (!inputFile.is_open()) {
         cerr<<"Error opening input.txt file."<<endl;
         return;
     }
-
-
+    
+    int procID = 1;
     int burstTime, arrivalTime, priority;
     char colon;
 
     while (inputFile >> burstTime >> colon >> arrivalTime >> colon >> priority) {
-        insertNode(burstTime, arrivalTime, priority);
+        insertNode(procID, burstTime, arrivalTime, priority);
+        procID++;
     }
     inputFile.close();
 
@@ -160,17 +188,47 @@ void selectWhichMethod(){
 }
 
 
+void pritnResults(){
+	Node* current = head;
+	Result* resultCurrent = resultHead;
+	int printProc = procNumber;
+	
+	ofstream outputFile("output.txt", ios::app);
+    cout<<"Scheduling Method:"<< (preemptiveMode ? "preemptive" : "non-preemptive ")<< schedulingMethod<<"\n";
+    outputFile<<"Scheduling Method:"<< (preemptiveMode ? "preemptive" : "non-preemptive ")<< schedulingMethod<<"\n";
+    cout<<"Process Waiting Times:\n";
+    outputFile<<"Process Waiting Times:\n";
+    
+    while(resultCurrent){
+    	cout<<"P"<<current->procID<<": "<<resultCurrent->waitingTime<<" ms\n";
+        outputFile<<"P"<<current->procID<<": "<<resultCurrent->waitingTime<<" ms\n";
+        
+        printProc--;
+        current = current->next;
+        resultCurrent = resultCurrent->resultNext;
+	}
+	cout<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
+    outputFile<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
+    
+    averageWaitingTime = 0;
+    outputFile.close();
+    emptyList();
+}
+
+void emptyList() {
+    while (resultHead != NULL) {
+        Result* temp = resultHead;
+        resultHead = resultHead->resultNext;
+        delete temp;
+    }
+}
+
+
 void fcfsFunc() {
 	
     Node* current = head;
     int currentTime = 0;
     int totalWaitingTime = 0;
-    int count=1;
-    ofstream outputFile("output.txt", ios::app);
-    cout<<"Scheduling Method: First Come First Served\n";
-    outputFile<<"Scheduling Method: First Come First Served\n";
-    cout<<"Process Waiting Times:\n";
-    outputFile<<"Process Waiting Times:\n";
     
     while (current) {
         if (current->arrivalTime > currentTime) {
@@ -179,19 +237,15 @@ void fcfsFunc() {
 
         int waitingTime = currentTime - current->arrivalTime;
         totalWaitingTime += waitingTime;
-        
-        cout<<"P"<<count<<": "<<waitingTime<<" ms\n";
-        outputFile<<"P"<<count<<": "<<waitingTime<<" ms\n";
+        insertResult(waitingTime);
         
         currentTime += current->burstTime;
         current = current->next;
-        count++;
     }
 
     if (procNumber > 0) {
-        double averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-        cout<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
-        outputFile<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
+        averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
     }
-    outputFile.close();
+    pritnResults();
 }
+
