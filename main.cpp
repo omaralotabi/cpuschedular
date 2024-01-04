@@ -272,6 +272,33 @@ void nonSJF() {
         current = current->next;
     }
 
-    //I'll Perform Non-preemptive SJF Here
+    //Non-preemptive SJF Logic
+    Node* sjfCurrent = tempHead;
+    int currentTime = 0;
+    int totalWaitingTime = 0;
 
+    while (sjfCurrent != NULL) {
+        if (sjfCurrent->arrivalTime > currentTime) {
+            currentTime = sjfCurrent->arrivalTime;
+        }
+
+        int start = currentTime;
+        int finish = currentTime + sjfCurrent->burstTime;
+        int waitingTime = start - sjfCurrent->arrivalTime;
+        currentTime += sjfCurrent->burstTime;
+        totalWaitingTime += waitingTime;
+        insertResult(waitingTime);
+
+        sjfCurrent = sjfCurrent->next;
+    }
+
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    pritnResults();
+
+    // TO Delete The Temporary list
+    while (tempHead != NULL) {
+        Node* tempNode = tempHead;
+        tempHead = tempHead->next;
+        delete tempNode;
+    }
 }
