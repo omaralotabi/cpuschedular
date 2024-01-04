@@ -15,7 +15,7 @@ struct Node {
     Node(int ID, int b, int a, int p) : procID(ID), burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
 };
 
-//store 
+//Store Results From Scheduling Methods Functions 
 struct Result {
 	int waitingTime;
     Result* resultNext;
@@ -43,6 +43,7 @@ void insertResult(int waitingTime);
 void pritnResults();
 void emptyList();
 void fcfsFunc();
+void nonSJF();
 
 
 int main() {
@@ -173,7 +174,7 @@ void selectWhichMethod(){
 	}else if(preemptiveMode && schedulingMethodNum==2){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\n";
 	}else if(!preemptiveMode && schedulingMethodNum==3){
-		
+		nonSJF();
 	}else if(preemptiveMode && schedulingMethodNum==3){
 		
 	}else if(!preemptiveMode && schedulingMethodNum==4){
@@ -223,7 +224,6 @@ void emptyList() {
     }
 }
 
-
 void fcfsFunc() {
 	
     Node* current = head;
@@ -249,3 +249,29 @@ void fcfsFunc() {
     pritnResults();
 }
 
+void nonSJF() {
+    Node* tempHead = NULL;
+    Node* current = head;
+
+    while (current != NULL) {
+        // Insert The Nodes To Temporary list sorted Based On burstTime (BS)
+        Node* tempNode = new Node(current->procID, current->burstTime, current->arrivalTime, current->priority);
+
+        if (tempHead == NULL || tempNode->burstTime < tempHead->burstTime) {
+            tempNode->next = tempHead;
+            tempHead = tempNode;
+        } else {
+            Node* tempCurrent = tempHead;
+            while (tempCurrent->next != NULL && tempCurrent->next->burstTime < tempNode->burstTime) {
+                tempCurrent = tempCurrent->next;
+            }
+            tempNode->next = tempCurrent->next;
+            tempCurrent->next = tempNode;
+        }
+
+        current = current->next;
+    }
+
+    //I'll Perform Non-preemptive SJF Here
+
+}
