@@ -15,7 +15,7 @@ struct Node {
     Node(int ID, int b, int a, int p) : procID(ID), burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
 };
 
-//Store Results From Scheduling Methods Functions 
+//store 
 struct Result {
 	int waitingTime;
     Result* resultNext;
@@ -42,8 +42,9 @@ void selectWhichMethod();
 void insertResult(int waitingTime);
 void pritnResults();
 void emptyList();
+void searchMinMaxAT(int& minAT, int& maxAT);
 void fcfsFunc();
-void nonSJF();
+void nonPreSJF();
 
 
 int main() {
@@ -174,7 +175,7 @@ void selectWhichMethod(){
 	}else if(preemptiveMode && schedulingMethodNum==2){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\n";
 	}else if(!preemptiveMode && schedulingMethodNum==3){
-		nonSJF();
+		nonPreSJF();
 	}else if(preemptiveMode && schedulingMethodNum==3){
 		
 	}else if(!preemptiveMode && schedulingMethodNum==4){
@@ -224,6 +225,24 @@ void emptyList() {
     }
 }
 
+void searchMinMaxAT(int& minAT, int& maxAT){
+    minAT = maxAT = head->arrivalTime;
+
+    Node* current = head->next;
+    while (current != NULL) {
+        if (current->arrivalTime < minAT) {
+            minAT = current->arrivalTime;
+        }
+
+        if (current->arrivalTime > maxAT) {
+            maxAT = current->arrivalTime;
+        }
+
+        current = current->next;
+    }	
+}
+
+
 void fcfsFunc() {
 	
     Node* current = head;
@@ -249,56 +268,8 @@ void fcfsFunc() {
     pritnResults();
 }
 
-void nonSJF() {
-    Node* tempHead = NULL;
-    Node* current = head;
+void nonPreSJF(){
+	int minAT, maxAT;
+    searchMinMaxAT(minAT, maxAT);
 
-    while (current != NULL) {
-        // Insert The Nodes To Temporary list sorted Based On burstTime (BS)
-        Node* tempNode = new Node(current->procID, current->burstTime, current->arrivalTime, current->priority);
-
-        if (tempHead == NULL || tempNode->burstTime < tempHead->burstTime) {
-            tempNode->next = tempHead;
-            tempHead = tempNode;
-        } else {
-            Node* tempCurrent = tempHead;
-            while (tempCurrent->next != NULL && tempCurrent->next->burstTime < tempNode->burstTime) {
-                tempCurrent = tempCurrent->next;
-            }
-            tempNode->next = tempCurrent->next;
-            tempCurrent->next = tempNode;
-        }
-
-        current = current->next;
-    }
-
-    //Non-preemptive SJF Logic
-    Node* sjfCurrent = tempHead;
-    int currentTime = 0;
-    int totalWaitingTime = 0;
-
-    while (sjfCurrent != NULL) {
-        if (sjfCurrent->arrivalTime > currentTime) {
-            currentTime = sjfCurrent->arrivalTime;
-        }
-
-        int start = currentTime;
-        int finish = currentTime + sjfCurrent->burstTime;
-        int waitingTime = start - sjfCurrent->arrivalTime;
-        currentTime += sjfCurrent->burstTime;
-        totalWaitingTime += waitingTime;
-        insertResult(waitingTime);
-
-        sjfCurrent = sjfCurrent->next;
-    }
-
-    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
-
-    // TO Delete The Temporary list
-    while (tempHead != NULL) {
-        Node* tempNode = tempHead;
-        tempHead = tempHead->next;
-        delete tempNode;
-    }
 }
