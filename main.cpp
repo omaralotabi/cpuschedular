@@ -319,11 +319,11 @@ void findMinNodeBT() {
             prevMinNode = minNode;
             minNode = current;
         }
-        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority < minNode->priority) {
+        else if (current->burstTime == minNode->burstTime&& current->priority < minNode->priority) {
             prevMinNode = minNode;
             minNode = current;
         }
-        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority == minNode->priority && current->procID < minNode->procID) {
+        else if (current->burstTime == minNode->burstTime&& current->priority == minNode->priority && current->procID < minNode->procID) {
             prevMinNode = minNode;
             minNode = current;
         }
