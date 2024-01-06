@@ -35,17 +35,23 @@ Node* head = NULL;
 Result* resultHead = NULL;
 double averageWaitingTime;
 int cTime;
+int totalWaitingTime = 0;
+int waitingTime = 0;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
 void insertNode(int procID, int burstTime, int arrivalTime, int priority);
 void readFromFileAndStore();
 void selectWhichMethod();
-void insertResult(int waitingTime);
+void insertResult(int resultID, int waitingTime);
 void pritnResults();
 void emptyList();
 void fcfsFunc();
-void nonPreemptiveSJF();
+void removeNode( Node* target);
+void emptyLinkedList();
+void nonPreSJFLogic();
+void nonPreSJF();
+
 
 int main() {
 	readFromFileAndStore();
@@ -175,7 +181,7 @@ void selectWhichMethod(){
 	}else if(preemptiveMode && schedulingMethodNum==2){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\n";
 	}else if(!preemptiveMode && schedulingMethodNum==3){
-		nonPreemptiveSJF();
+        nonPreSJF();
 	}else if(preemptiveMode && schedulingMethodNum==3){
 		
 	}else if(!preemptiveMode && schedulingMethodNum==4){
@@ -191,9 +197,7 @@ void selectWhichMethod(){
 
 
 void pritnResults(){
-	Node* current = head;
 	Result* resultCurrent = resultHead;
-	int printProc = procNumber;
 	
 	ofstream outputFile("output.txt", ios::app);
     cout<<"Scheduling Method:"<< (preemptiveMode ? "preemptive" : "non-preemptive ")<< schedulingMethod<<"\n";
@@ -202,21 +206,22 @@ void pritnResults(){
     outputFile<<"Process Waiting Times:\n";
     
     while(resultCurrent){
-    	cout<<"P"<<current->procID<<": "<<resultCurrent->waitingTime<<" ms\n";
-        outputFile<<"P"<<current->procID<<": "<<resultCurrent->waitingTime<<" ms\n";
+    	cout<<"P"<<resultCurrent->resultID<<": "<<resultCurrent->waitingTime<<" ms\n";
+        outputFile<<"P"<<resultCurrent->resultID<<": "<<resultCurrent->waitingTime<<" ms\n";
         
-        printProc--;
-        current = current->next;
         resultCurrent = resultCurrent->resultNext;
 	}
 	cout<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
     outputFile<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
     
     averageWaitingTime = 0;
+    cTime = 0;
+    waitingTime = 0;
+    totalWaitingTime = 0;
     outputFile.close();
     emptyList();
 }
-
+//For The Result LL
 void emptyList() {
     while (resultHead != NULL) {
         Result* temp = resultHead;
@@ -224,33 +229,106 @@ void emptyList() {
         delete temp;
     }
 }
-
-
-void fcfsFunc() {
-	
+//For The Main LL
+void emptyLinkedList() {
     Node* current = head;
-    int currentTime = 0;
-    int totalWaitingTime = 0;
-    
-    while (current) {
-        if (current->arrivalTime > currentTime) {
-            currentTime = current->arrivalTime;
-        }
+    Node* nextNode;
 
-        int waitingTime = currentTime - current->arrivalTime;
-        totalWaitingTime += waitingTime;
-        insertResult(waitingTime);
-        
-        currentTime += current->burstTime;
+    while (current != NULL) {
+        nextNode = current->next;
+        delete current;
+        current = nextNode;
+    }
+    
+    head = NULL;
+    procNumber = 0;
+}
+
+void nonPreSJFLogic() {
+    if (head == NULL) {
+        std::cout << "Linked list is empty." << std::endl;
+        return;
+    }
+
+    Node* current = head;
+    Node* selectedProcess = NULL;
+
+    while (current != NULL) {
+        if (current->arrivalTime <= cTime) {
+            if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
+                (current->burstTime == selectedProcess->burstTime && current->priority < selectedProcess->priority) ||
+                (current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                selectedProcess = current;
+            }
+        }
         current = current->next;
     }
 
-    if (procNumber > 0) {
-        averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+
+    	waitingTime = cTime - selectedProcess->arrivalTime;
+    	insertResult(selectedProcess->procID, waitingTime);
+    	totalWaitingTime +=waitingTime;
+        cTime += selectedProcess->burstTime;
+        removeNode(selectedProcess);
+
+}
+
+void removeNode( Node* target) {
+    if (head == target) {
+        head = target->next;
+        delete target;
+        return;
     }
+
+    Node* current = head;
+    while (current != NULL && current->next != target) {
+        current = current->next;
+    }
+
+    if (current != NULL) {
+        current->next = target->next;
+        delete target;
+    }
+    procNumber--;
+}
+
+void fcfsFunc() {
+	if (head == NULL) {
+        cout << "Linked list is empty." << endl;
+        return;
+    }
+    Node* current = head;
+    
+    while (current) {
+        if (current->arrivalTime > cTime) {
+            cTime = current->arrivalTime;
+        }
+
+        waitingTime = cTime - current->arrivalTime;
+        totalWaitingTime += waitingTime;
+        insertResult(current->procID, waitingTime);
+        
+        cTime += current->burstTime;
+        current = current->next;
+    }
+    
+
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
     pritnResults();
 }
 
-void nonPreemptiveSJF() {
-   
+void nonPreSJF(){
+	while (head != NULL) {
+        nonPreSJFLogic();
+    }
+    
+    emptyLinkedList();
+    readFromFileAndStore();
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    pritnResults();
+    cout<<procNumber;
 }
+
+
+
+
