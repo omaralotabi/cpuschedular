@@ -44,10 +44,12 @@ int procNumber = 0;
 Node* head = NULL;
 Result* resultHead = NULL;
 sortList* sortHead = NULL;
+int waitingTime = 0;
+int totalWaitingTime = 0;
 double averageWaitingTime;
 int minAT;
 int maxAT;
-int cTime;
+int cTime = 0;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
@@ -61,6 +63,8 @@ void emptyList();
 void searchMinMaxAT(int& minAT, int& maxAT);
 void findMinNode();
 void findMinNodeBT();
+void findMinNodeThirdProb();
+void emptySortList();
 void fcfsFunc();
 void nonPreSJF();
 
@@ -244,8 +248,12 @@ void pritnResults(){
     outputFile<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
     
     averageWaitingTime = 0;
+    waitingTime = 0;
+    totalWaitingTime = 0;
+    cTime=0;
     outputFile.close();
     emptyList();
+    emptySortList();
 }
 
 void emptyList() {
@@ -338,21 +346,68 @@ void findMinNodeBT() {
     }
 
     insertSort(minNode->procID, minNode->burstTime, minNode->arrivalTime, minNode->priority);
-    cTime = minNode->burstTime;
+    cTime += minNode->burstTime;
 }
+
+void findMinNodeThirdProb() {
+    Node* minNode = head;
+    Node* prevMinNode = NULL;
+    Node* current = head->next;
+
+    while (current != NULL) {
+    	if (current->arrivalTime < cTime) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+        if (current->arrivalTime < cTime && current->arrivalTime < minNode->arrivalTime) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+        else if (current->arrivalTime < cTime && current->arrivalTime == minNode->arrivalTime && current->burstTime < minNode->burstTime) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+        else if (current->arrivalTime < cTime && current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority < minNode->priority) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+        else if (current->arrivalTime < cTime && current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority == minNode->priority && current->procID < minNode->procID) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+
+        current = current->next;
+    }
+
+    if (prevMinNode == NULL) {
+        head = head->next;
+    } else {
+        prevMinNode->next = minNode->next;
+    }
+
+    insertSort(minNode->procID, minNode->burstTime, minNode->arrivalTime, minNode->priority);
+    cTime += minNode->burstTime;
+}
+
+void emptySortList() {
+    while (sortHead != NULL) {
+        sortList* temp = sortHead;
+        sortHead = sortHead->slNext;
+        delete temp;
+    }
+}
+
 
 void fcfsFunc() {
 	
     Node* current = head;
-    cTime = 0;
-    int totalWaitingTime = 0;
     
     while (current) {
         if (current->arrivalTime > cTime) {
             cTime = current->arrivalTime;
         }
 
-        int waitingTime = cTime - current->arrivalTime;
+        waitingTime = cTime - current->arrivalTime;
         totalWaitingTime += waitingTime;
         insertResult(waitingTime);
         
@@ -360,11 +415,9 @@ void fcfsFunc() {
         current = current->next;
     }
 
-    if (procNumber > 0) {
-        averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    }
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+        
     pritnResults();
-    cTime=0;
 }
 
 void nonPreSJF(){
@@ -375,10 +428,25 @@ void nonPreSJF(){
     if (current->arrivalTime==minAT){
     	findMinNode();
 	}
-	if (cTime >= maxAT){
-		while(current->next!=NULL){
-			findMinNodeBT();
-		}
-	}else if(cTime < maxAT)
-    cout<<minAT<<" "<<maxAT;
+	
+	while(current->next!=NULL){
+		if (cTime >= maxAT){
+		    findMinNodeBT();
+	    }else if(cTime < maxAT){
+		    findMinNodeThirdProb();
+	    }
+	}
+	cTime=0;
+	while(sortCurrent){
+		waitingTime = cTime - sortCurrent->slArrivalTime;
+		totalWaitingTime += waitingTime;
+		insertResult(waitingTime);
+		
+		cTime += sortCurrent->slBurstTime;
+		sortCurrent = sortCurrent->slNext;
+	}
+	averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+	
+	pritnResults();
+	readFromFileAndStore();
 }
