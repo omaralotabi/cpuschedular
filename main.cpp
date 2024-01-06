@@ -47,6 +47,7 @@ sortList* sortHead = NULL;
 double averageWaitingTime;
 int minAT;
 int maxAT;
+int cTime;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
@@ -60,6 +61,7 @@ void emptyList();
 void searchMinMaxAT(int& minAT, int& maxAT);
 void fcfsFunc();
 void nonPreSJF();
+void findMinNode();
 
 
 int main() {
@@ -270,23 +272,59 @@ void searchMinMaxAT(int& minAT, int& maxAT){
     }	
 }
 
+void findMinNode() {
+    Node* minNode = head;
+    Node* prevMinNode = NULL;
+    Node* current = head->next;
+
+    while (current != NULL) {
+        if (current->arrivalTime < minNode->arrivalTime) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime < minNode->burstTime) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority < minNode->priority) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority == minNode->priority && current->procID < minNode->procID) {
+            prevMinNode = minNode;
+            minNode = current;
+        }
+
+        current = current->next;
+    }
+
+    if (prevMinNode == NULL) {
+        head = head->next;
+    } else {
+        prevMinNode->next = minNode->next;
+    }
+
+    insertSort(minNode->procID, minNode->burstTime, minNode->arrivalTime, minNode->priority);
+    cTime = minNode->burstTime;
+}
+
 
 void fcfsFunc() {
 	
     Node* current = head;
-    int currentTime = 0;
+    cTime = 0;
     int totalWaitingTime = 0;
     
     while (current) {
-        if (current->arrivalTime > currentTime) {
-            currentTime = current->arrivalTime;
+        if (current->arrivalTime > cTime) {
+            cTime = current->arrivalTime;
         }
 
-        int waitingTime = currentTime - current->arrivalTime;
+        int waitingTime = cTime - current->arrivalTime;
         totalWaitingTime += waitingTime;
         insertResult(waitingTime);
         
-        currentTime += current->burstTime;
+        cTime += current->burstTime;
         current = current->next;
     }
 
@@ -294,9 +332,19 @@ void fcfsFunc() {
         averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
     }
     pritnResults();
+    cTime=0;
 }
 
 void nonPreSJF(){
+	Node* current = head;
+	Result* resultCurrent = resultHead;
+	sortList* sortCurrent = sortHead;
     searchMinMaxAT(minAT, maxAT);
+    if (current->arrivalTime==minAT){
+    	findMinNode();
+	}
+	if (cTime >= maxAT){
+		
+	}
     cout<<minAT<<" "<<maxAT;
 }
