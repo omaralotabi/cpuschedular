@@ -15,23 +15,13 @@ struct Node {
     Node(int ID, int b, int a, int p) : procID(ID), burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
 };
 
-//Linked List To Store The Sorted Nodes
-struct sortList {
-	int slProcID;
-    int slBurstTime;
-    int slArrivalTime;
-    int slPriority;
-    sortList* slNext;
-
-    sortList(int slID, int slB, int slA, int slP) : slProcID(slID), slBurstTime(slB), slArrivalTime(slA), slPriority(slP), slNext(NULL) {}
-};
-
-//Store Results
+//store 
 struct Result {
+	int resultID;
 	int waitingTime;
     Result* resultNext;
 
-    Result(int w) : waitingTime(w), resultNext(NULL) {}
+    Result(int rID, int w) : resultID(rID), waitingTime(w), resultNext(NULL) {}
 };
 
 
@@ -43,31 +33,19 @@ int timeQuantum = 0;
 int procNumber = 0;
 Node* head = NULL;
 Result* resultHead = NULL;
-sortList* sortHead = NULL;
-int waitingTime = 0;
-int totalWaitingTime = 0;
 double averageWaitingTime;
-int minAT;
-int maxAT;
-int cTime = 0;
+int cTime;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
 void insertNode(int procID, int burstTime, int arrivalTime, int priority);
-void insertSort(int slProcID, int slBurstTime, int slArrivalTime, int slPriority);
 void readFromFileAndStore();
 void selectWhichMethod();
 void insertResult(int waitingTime);
 void pritnResults();
 void emptyList();
-void searchMinMaxAT(int& minAT, int& maxAT);
-void findMinNode();
-void findMinNodeBT();
-void findMinNodeThirdProb();
-void emptySortList();
 void fcfsFunc();
-void nonPreSJF();
-
+void nonPreemptiveSJF();
 
 int main() {
 	readFromFileAndStore();
@@ -157,8 +135,8 @@ void insertNode(int procID, int burstTime, int arrivalTime, int priority) {
 }
 
 //Insert The Output Of Scheduling Methods (Insert Back)
-void insertResult(int waitingTime) {
-    Result* newResult = new Result(waitingTime);
+void insertResult(int resultID, int waitingTime) {
+    Result* newResult = new Result(resultID, waitingTime);
     if (resultHead == NULL) {
         resultHead = newResult;
     } else {
@@ -167,19 +145,6 @@ void insertResult(int waitingTime) {
             resultCurrent = resultCurrent->resultNext;
         }
         resultCurrent->resultNext = newResult;
-    }
-}
-
-void insertSort(int slProcID, int slBurstTime, int slArrivalTime, int slPriority) {
-    sortList* newSort = new sortList(slProcID, slBurstTime, slArrivalTime, slPriority);
-    if (sortHead == NULL) {
-        sortHead = newSort;
-    } else {
-        sortList* sortCurrent = sortHead;
-        while (sortCurrent->slNext != NULL) {
-            sortCurrent = sortCurrent->slNext;
-        }
-        sortCurrent->slNext = newSort;
     }
 }
 
@@ -210,7 +175,7 @@ void selectWhichMethod(){
 	}else if(preemptiveMode && schedulingMethodNum==2){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\n";
 	}else if(!preemptiveMode && schedulingMethodNum==3){
-		nonPreSJF();
+		nonPreemptiveSJF();
 	}else if(preemptiveMode && schedulingMethodNum==3){
 		
 	}else if(!preemptiveMode && schedulingMethodNum==4){
@@ -248,12 +213,8 @@ void pritnResults(){
     outputFile<<"Average Waiting Time: "<<averageWaitingTime<<" ms\n";
     
     averageWaitingTime = 0;
-    waitingTime = 0;
-    totalWaitingTime = 0;
-    cTime=0;
     outputFile.close();
     emptyList();
-    emptySortList();
 }
 
 void emptyList() {
@@ -264,189 +225,32 @@ void emptyList() {
     }
 }
 
-void searchMinMaxAT(int& minAT, int& maxAT){
-    minAT = maxAT = head->arrivalTime;
-
-    Node* current = head->next;
-    while (current != NULL) {
-        if (current->arrivalTime < minAT) {
-            minAT = current->arrivalTime;
-        }
-
-        if (current->arrivalTime > maxAT) {
-            maxAT = current->arrivalTime;
-        }
-
-        current = current->next;
-    }	
-}
-
-void findMinNode() {
-    Node* minNode = head;
-    Node* prevMinNode = NULL;
-    Node* current = head->next;
-
-    while (current != NULL) {
-        if (current->arrivalTime < minNode->arrivalTime) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime < minNode->burstTime) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority < minNode->priority) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority == minNode->priority && current->procID < minNode->procID) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-
-        current = current->next;
-    }
-
-    if (prevMinNode == NULL) {
-        head = head->next;
-    } else {
-        prevMinNode->next = minNode->next;
-    }
-
-    insertSort(minNode->procID, minNode->burstTime, minNode->arrivalTime, minNode->priority);
-    cTime = minNode->burstTime;
-}
-
-void findMinNodeBT() {
-    Node* minNode = head;
-    Node* prevMinNode = NULL;
-    Node* current = head->next;
-
-    while (current != NULL) {
-        if (current->burstTime < minNode->burstTime) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->burstTime == minNode->burstTime&& current->priority < minNode->priority) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->burstTime == minNode->burstTime&& current->priority == minNode->priority && current->procID < minNode->procID) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-
-        current = current->next;
-    }
-
-    if (prevMinNode == NULL) {
-        head = head->next;
-    } else {
-        prevMinNode->next = minNode->next;
-    }
-
-    insertSort(minNode->procID, minNode->burstTime, minNode->arrivalTime, minNode->priority);
-    cTime += minNode->burstTime;
-}
-
-void findMinNodeThirdProb() {
-    Node* minNode = head;
-    Node* prevMinNode = NULL;
-    Node* current = head->next;
-
-    while (current != NULL) {
-    	if (current->arrivalTime < cTime) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        if (current->arrivalTime < cTime && current->arrivalTime < minNode->arrivalTime) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->arrivalTime < cTime && current->arrivalTime == minNode->arrivalTime && current->burstTime < minNode->burstTime) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->arrivalTime < cTime && current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority < minNode->priority) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-        else if (current->arrivalTime < cTime && current->arrivalTime == minNode->arrivalTime && current->burstTime == minNode->burstTime&& current->priority == minNode->priority && current->procID < minNode->procID) {
-            prevMinNode = minNode;
-            minNode = current;
-        }
-
-        current = current->next;
-    }
-
-    if (prevMinNode == NULL) {
-        head = head->next;
-    } else {
-        prevMinNode->next = minNode->next;
-    }
-
-    insertSort(minNode->procID, minNode->burstTime, minNode->arrivalTime, minNode->priority);
-    cTime += minNode->burstTime;
-}
-
-void emptySortList() {
-    while (sortHead != NULL) {
-        sortList* temp = sortHead;
-        sortHead = sortHead->slNext;
-        delete temp;
-    }
-}
-
 
 void fcfsFunc() {
 	
     Node* current = head;
+    int currentTime = 0;
+    int totalWaitingTime = 0;
     
     while (current) {
-        if (current->arrivalTime > cTime) {
-            cTime = current->arrivalTime;
+        if (current->arrivalTime > currentTime) {
+            currentTime = current->arrivalTime;
         }
 
-        waitingTime = cTime - current->arrivalTime;
+        int waitingTime = currentTime - current->arrivalTime;
         totalWaitingTime += waitingTime;
         insertResult(waitingTime);
         
-        cTime += current->burstTime;
+        currentTime += current->burstTime;
         current = current->next;
     }
 
-    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-        
+    if (procNumber > 0) {
+        averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    }
     pritnResults();
 }
 
-void nonPreSJF(){
-	Node* current = head;
-	Result* resultCurrent = resultHead;
-	sortList* sortCurrent = sortHead;
-    searchMinMaxAT(minAT, maxAT);
-    if (current->arrivalTime==minAT){
-    	findMinNode();
-	}
-	
-	while(current->next!=NULL){
-		if (cTime >= maxAT){
-		    findMinNodeBT();
-	    }else if(cTime < maxAT){
-		    findMinNodeThirdProb();
-	    }
-	}
-	cTime=0;
-	while(sortCurrent){
-		waitingTime = cTime - sortCurrent->slArrivalTime;
-		totalWaitingTime += waitingTime;
-		insertResult(waitingTime);
-		
-		cTime += sortCurrent->slBurstTime;
-		sortCurrent = sortCurrent->slNext;
-	}
-	averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-	
-	pritnResults();
-	readFromFileAndStore();
+void nonPreemptiveSJF() {
+   
 }
