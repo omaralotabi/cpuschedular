@@ -15,7 +15,18 @@ struct Node {
     Node(int ID, int b, int a, int p) : procID(ID), burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
 };
 
-//store 
+//Linked List To Store The Sorted Nodes
+struct sortList {
+	int slProcID;
+    int slBurstTime;
+    int slArrivalTime;
+    int slPriority;
+    sortList* slNext;
+
+    sortList(int slID, int slB, int slA, int slP) : slProcID(slID), slBurstTime(slB), slArrivalTime(slA), slPriority(slP), slNext(NULL) {}
+};
+
+//Store Results
 struct Result {
 	int waitingTime;
     Result* resultNext;
@@ -32,11 +43,15 @@ int timeQuantum = 0;
 int procNumber = 0;
 Node* head = NULL;
 Result* resultHead = NULL;
+sortList* sortHead = NULL;
 double averageWaitingTime;
+int minAT;
+int maxAT;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
 void insertNode(int procID, int burstTime, int arrivalTime, int priority);
+void insertSort(int slProcID, int slBurstTime, int slArrivalTime, int slPriority);
 void readFromFileAndStore();
 void selectWhichMethod();
 void insertResult(int waitingTime);
@@ -145,6 +160,19 @@ void insertResult(int waitingTime) {
             resultCurrent = resultCurrent->resultNext;
         }
         resultCurrent->resultNext = newResult;
+    }
+}
+
+void insertSort(int slProcID, int slBurstTime, int slArrivalTime, int slPriority) {
+    sortList* newSort = new sortList(slProcID, slBurstTime, slArrivalTime, slPriority);
+    if (sortHead == NULL) {
+        sortHead = newSort;
+    } else {
+        sortList* sortCurrent = sortHead;
+        while (sortCurrent->slNext != NULL) {
+            sortCurrent = sortCurrent->slNext;
+        }
+        sortCurrent->slNext = newSort;
     }
 }
 
@@ -269,7 +297,6 @@ void fcfsFunc() {
 }
 
 void nonPreSJF(){
-	int minAT, maxAT;
     searchMinMaxAT(minAT, maxAT);
-
+    cout<<minAT<<" "<<maxAT;
 }
