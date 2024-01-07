@@ -259,7 +259,7 @@ void nonPreSJFLogic() {
         if (current->arrivalTime <= cTime) {
             if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
                 (current->burstTime == selectedProcess->burstTime && current->priority < selectedProcess->priority) ||
-                (current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                (current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime)) {
                 selectedProcess = current;
             }
         }
@@ -306,7 +306,7 @@ void nonPrePriorityLogic() {
     while (current != NULL) {
         if (current->arrivalTime <= cTime) {
             if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
-                (current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime)) {
                 selectedProcess = current;
             }
         }
