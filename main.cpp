@@ -51,6 +51,8 @@ void removeNode( Node* target);
 void emptyLinkedList();
 void nonPreSJFLogic();
 void nonPreSJF();
+void nonPrePriorityLogic();
+void nonPrePriority();
 
 
 int main() {
@@ -185,7 +187,7 @@ void selectWhichMethod(){
 	}else if(preemptiveMode && schedulingMethodNum==3){
 		
 	}else if(!preemptiveMode && schedulingMethodNum==4){
-		
+		nonPrePriority();
 	}else if(preemptiveMode && schedulingMethodNum==4){
 		
 	}else if(!preemptiveMode && schedulingMethodNum==5){
@@ -246,7 +248,7 @@ void emptyLinkedList() {
 
 void nonPreSJFLogic() {
     if (head == NULL) {
-        std::cout << "Linked list is empty." << std::endl;
+        cout << "Linked list is empty." << endl;
         return;
     }
 
@@ -292,6 +294,34 @@ void removeNode( Node* target) {
     procNumber--;
 }
 
+void nonPrePriorityLogic() {
+    if (head == NULL) {
+        std::cout << "Linked list is empty." << endl;
+        return;
+    }
+
+    Node* current = head;
+    Node* selectedProcess = NULL;
+
+    while (current != NULL) {
+        if (current->arrivalTime <= cTime) {
+            if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
+                (current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                selectedProcess = current;
+            }
+        }
+        current = current->next;
+    }
+
+
+    	waitingTime = cTime - selectedProcess->arrivalTime;
+    	insertResult(selectedProcess->procID, waitingTime);
+    	totalWaitingTime +=waitingTime;
+        cTime += selectedProcess->burstTime;
+        removeNode(selectedProcess);
+
+}
+
 void fcfsFunc() {
 	if (head == NULL) {
         cout << "Linked list is empty." << endl;
@@ -329,6 +359,15 @@ void nonPreSJF(){
     cout<<procNumber;
 }
 
-
-
+void nonPrePriority(){
+	while (head != NULL) {
+        nonPrePriorityLogic();
+    }
+    
+    emptyLinkedList();
+    readFromFileAndStore();
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    pritnResults();
+    cout<<procNumber;
+}
 
