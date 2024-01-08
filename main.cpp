@@ -394,7 +394,6 @@ void nonPreSJF(){
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
     pritnResults();
-    cout<<procNumber;
 }
 
 void nonPrePriority(){
@@ -406,32 +405,45 @@ void nonPrePriority(){
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
     pritnResults();
-    cout<<procNumber;
 }
 
 void roundRobinScheduler() {
-    if (head == NULL) {
+    if (cHead == NULL) {
         cout << "No processes in the circular linked list." << endl;
         return;
     }
 
     cNode* cCurrent = cHead;
-
+    int tempNumber = procNumber;
+    
     do {
         if (cCurrent->cArrivalTime <= cTime) {
-            cout << "Processing process ID: " << cCurrent->cProcID << " for time quantum." << endl;
 
             if (cCurrent->cBurstTime <= timeQuantum) {
+                cCurrent->start = cTime;
                 cTime += cCurrent->cBurstTime;
                 cCurrent->cArrivalTime = -1;
-                cout << "Process ID: " << cCurrent->cProcID << " completed." << endl;
             } else {
+                cCurrent->start = cTime;
                 cTime += timeQuantum;
                 cCurrent->cBurstTime -= timeQuantum;
             }
         }
-
+        
+        if(tempNumber > 0){
+			cCurrent->waitingT += cCurrent->start - cCurrent->cArrivalTime;
+			tempNumber--;
+		}else{
+			cCurrent->waitingT += cCurrent->start - cCurrent->end;
+		}
+		cCurrent->end = cTime;
         cCurrent = cCurrent->cNext;
 
     } while (cCurrent->cBurstTime > 0 && cCurrent->cArrivalTime != -1);
+    tempNumber=procNumber;
+    while(tempNumber>0){
+    	cout<<"p"<<cCurrent->cProcID<<" = "<<cCurrent->waitingT<<endl;
+    	cCurrent = cCurrent->cNext;
+    	tempNumber--;
+	}
 }
