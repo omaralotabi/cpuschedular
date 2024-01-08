@@ -69,6 +69,7 @@ void nonPreSJFLogic();
 void nonPreSJF();
 void nonPrePriorityLogic();
 void nonPrePriority();
+void roundRobinScheduler();
 
 
 int main() {
@@ -228,7 +229,7 @@ void selectWhichMethod(){
 	}else if(!preemptiveMode && schedulingMethodNum==5){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\n";
 	}else if(preemptiveMode && schedulingMethodNum==5){
-		
+		roundRobinScheduler();
 	}
 }
 
@@ -408,3 +409,29 @@ void nonPrePriority(){
     cout<<procNumber;
 }
 
+void roundRobinScheduler() {
+    if (head == NULL) {
+        cout << "No processes in the circular linked list." << endl;
+        return;
+    }
+
+    cNode* cCurrent = cHead;
+
+    do {
+        if (cCurrent->cArrivalTime <= cTime) {
+            cout << "Processing process ID: " << cCurrent->cProcID << " for time quantum." << endl;
+
+            if (cCurrent->cBurstTime <= timeQuantum) {
+                cTime += cCurrent->cBurstTime;
+                cCurrent->cArrivalTime = -1;
+                cout << "Process ID: " << cCurrent->cProcID << " completed." << endl;
+            } else {
+                cTime += timeQuantum;
+                cCurrent->cBurstTime -= timeQuantum;
+            }
+        }
+
+        cCurrent = cCurrent->cNext;
+
+    } while (cCurrent->cBurstTime > 0 && cCurrent->cArrivalTime != -1);
+}
