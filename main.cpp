@@ -30,9 +30,12 @@ struct cNode {
     int cBurstTime;
     int cArrivalTime;
     int cPriority;
+    int start;
+    int end;
+    int waitingT;
     cNode* cNext;
 
-    cNode(int cID, int cB, int cA, int cP) : cProcID(cID), cBurstTime(cB), cArrivalTime(cA), cPriority(cP), cNext(NULL) {}
+    cNode(int cID, int cB, int cA, int cP, int cS, int cE, int cW) : cProcID(cID), cBurstTime(cB), cArrivalTime(cA), cPriority(cP), start(cS), end(cE), waitingT(cW), cNext(NULL) {}
 };
 
 
@@ -53,7 +56,7 @@ int waitingTime = 0;
 //Functions Declarations
 void cpuSchedulerSimulator();
 void insertNode(int procID, int burstTime, int arrivalTime, int priority);
-void insertNode(int procID, int burstTime, int arrivalTime, int priority);
+void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority, int start, int end, int waitingT);
 void readFromFileAndStore();
 void selectWhichMethod();
 void insertResult(int resultID, int waitingTime);
@@ -170,8 +173,8 @@ void insertResult(int resultID, int waitingTime) {
 }
 
 //Insert To The Circular Linked List
-void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority) {
-    cNode* newcNode = new cNode(cProcID, cBurstTime, cArrivalTime, cPriority);
+void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority, int start, int end, int waitingT) {
+    cNode* newcNode = new cNode(cProcID, cBurstTime, cArrivalTime, cPriority, 0, 0, 0);
     
     if (cHead == NULL) {
         cHead = newcNode;
@@ -200,7 +203,7 @@ void readFromFileAndStore() {
 
     while (inputFile >> burstTime >> colon >> arrivalTime >> colon >> priority) {
         insertNode(procID, burstTime, arrivalTime, priority);
-        insertcNode(procID, burstTime, arrivalTime, priority);
+        insertcNode(procID, burstTime, arrivalTime, priority, 0, 0, 0);
         procID++;
     }
     inputFile.close();
@@ -291,7 +294,8 @@ void nonPreSJFLogic() {
         if (current->arrivalTime <= cTime) {
             if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
                 (current->burstTime == selectedProcess->burstTime && current->priority < selectedProcess->priority) ||
-                (current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime)) {
+                (current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
+				(current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
                 selectedProcess = current;
             }
         }
@@ -338,7 +342,8 @@ void nonPrePriorityLogic() {
     while (current != NULL) {
         if (current->arrivalTime <= cTime) {
             if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
-                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime)) {
+                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
+				(current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
                 selectedProcess = current;
             }
         }
