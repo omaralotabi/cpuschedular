@@ -24,6 +24,17 @@ struct Result {
     Result(int rID, int w) : resultID(rID), waitingTime(w), resultNext(NULL) {}
 };
 
+//circular LL
+struct cNode {
+    int cProcID;
+    int cBurstTime;
+    int cArrivalTime;
+    int cPriority;
+    cNode* cNext;
+
+    cNode(int cID, int cB, int cA, int cP) : cProcID(cID), cBurstTime(cB), cArrivalTime(cA), cPriority(cP), cNext(NULL) {}
+};
+
 
 //Global Variables
 bool preemptiveMode = false;
@@ -33,6 +44,7 @@ int timeQuantum = 0;
 int procNumber = 0;
 Node* head = NULL;
 Result* resultHead = NULL;
+cNode* cHead = NULL;
 double averageWaitingTime;
 int cTime;
 int totalWaitingTime = 0;
@@ -40,6 +52,7 @@ int waitingTime = 0;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
+void insertNode(int procID, int burstTime, int arrivalTime, int priority);
 void insertNode(int procID, int burstTime, int arrivalTime, int priority);
 void readFromFileAndStore();
 void selectWhichMethod();
@@ -156,6 +169,24 @@ void insertResult(int resultID, int waitingTime) {
     }
 }
 
+//Insert To The Circular Linked List
+void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority) {
+    cNode* newcNode = new cNode(cProcID, cBurstTime, cArrivalTime, cPriority);
+    
+    if (cHead == NULL) {
+        cHead = newcNode;
+        cHead->cNext = cHead;
+    } else {
+        cNode* ctemp = cHead;
+        while (ctemp->cNext != cHead) {
+            ctemp = ctemp->cNext;
+        }
+        
+        ctemp->cNext = newcNode;
+        newcNode->cNext = cHead;
+    }
+}
+
 void readFromFileAndStore() {
     ifstream inputFile("input.txt");
     if (!inputFile.is_open()) {
@@ -169,6 +200,7 @@ void readFromFileAndStore() {
 
     while (inputFile >> burstTime >> colon >> arrivalTime >> colon >> priority) {
         insertNode(procID, burstTime, arrivalTime, priority);
+        insertcNode(procID, burstTime, arrivalTime, priority);
         procID++;
     }
     inputFile.close();
