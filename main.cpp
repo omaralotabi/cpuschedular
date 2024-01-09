@@ -15,7 +15,7 @@ struct Node {
     Node(int ID, int b, int a, int p) : procID(ID), burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
 };
 
-//store 
+//Store Results
 struct Result {
 	int resultID;
 	int waitingTime;
@@ -60,16 +60,18 @@ void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority, i
 void readFromFileAndStore();
 void selectWhichMethod();
 void insertResult(int resultID, int waitingTime);
+void sortResults();
 void pritnResults();
 void emptyList();
 void fcfsFunc();
 void removeNode( Node* target);
 void emptyLinkedList();
+void emptyCircular();
 void nonPreSJFLogic();
 void nonPreSJF();
 void nonPrePriorityLogic();
 void nonPrePriority();
-void roundRobinScheduler();
+void roundRobin();
 
 
 int main() {
@@ -217,7 +219,7 @@ void selectWhichMethod(){
 	}else if(!preemptiveMode && schedulingMethodNum==2){
 		fcfsFunc();
 	}else if(preemptiveMode && schedulingMethodNum==2){
-		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\n";
+		fcfsFunc();
 	}else if(!preemptiveMode && schedulingMethodNum==3){
         nonPreSJF();
 	}else if(preemptiveMode && schedulingMethodNum==3){
@@ -227,19 +229,56 @@ void selectWhichMethod(){
 	}else if(preemptiveMode && schedulingMethodNum==4){
 		
 	}else if(!preemptiveMode && schedulingMethodNum==5){
-		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\n";
+		roundRobin();
 	}else if(preemptiveMode && schedulingMethodNum==5){
-		roundRobinScheduler();
+		roundRobin();
 	}
 }
 
+// Sort The Results Ascending Using BubbleSort Which We Learned In The Algorthim Course
+void sortResults() {
+    if (!resultHead || !resultHead->resultNext) {
+        return;
+    }
+
+    bool swapped;
+    Result* current;
+    Result* lastSorted = NULL;
+
+    do {
+        swapped = false;
+        current = resultHead;
+
+        while (current->resultNext != lastSorted) {
+            if (current->resultID > current->resultNext->resultID) {
+                std::swap(current->resultID, current->resultNext->resultID);
+                std::swap(current->waitingTime, current->resultNext->waitingTime);
+                swapped = true;
+            }
+
+            current = current->resultNext;
+        }
+
+        lastSorted = current;
+    } while (swapped);
+}
 
 void pritnResults(){
+	sortResults();
+	
 	Result* resultCurrent = resultHead;
 	
 	ofstream outputFile("output.txt", ios::app);
-    cout<<"Scheduling Method:"<< (preemptiveMode ? "preemptive" : "non-preemptive ")<< schedulingMethod<<"\n";
-    outputFile<<"Scheduling Method:"<< (preemptiveMode ? "preemptive" : "non-preemptive ")<< schedulingMethod<<"\n";
+	if (preemptiveMode && schedulingMethodNum==2){
+		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\nBut Here Is The Non-Preemptive FCFS instade: \n";
+		outputFile<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\nBut Here Is The Non-Preemptive FCFS instade: \n";
+	}else if(!preemptiveMode && schedulingMethodNum==5){
+		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\nBut Here Is The Preemptive RR instade: \n";
+		outputFile<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\nBut Here Is The Preemptive RR instade: \n";
+	}else{
+		cout<<"Scheduling Method:"<< (preemptiveMode ? "preemptive " : "non-preemptive ")<< schedulingMethod<<"\n";
+        outputFile<<"Scheduling Method:"<< (preemptiveMode ? "preemptive " : "non-preemptive ")<< schedulingMethod<<"\n";
+	}
     cout<<"Process Waiting Times:\n";
     outputFile<<"Process Waiting Times:\n";
     
@@ -258,6 +297,9 @@ void pritnResults(){
     totalWaitingTime = 0;
     outputFile.close();
     emptyList();
+    emptyLinkedList();
+    emptyCircular();
+    readFromFileAndStore();
 }
 //For The Result LL
 void emptyList() {
@@ -280,6 +322,19 @@ void emptyLinkedList() {
     
     head = NULL;
     procNumber = 0;
+}
+// For The Circular LL
+void emptyCircular() {
+    cNode* current = cHead;
+    cNode* nextNode;
+
+    do {
+        nextNode = current->cNext;
+        delete current;
+        current = nextNode;
+    } while (current != cHead);
+
+    cHead = NULL;
 }
 
 void nonPreSJFLogic() {
@@ -407,31 +462,31 @@ void nonPrePriority(){
     pritnResults();
 }
 
-void roundRobinScheduler() {
+void roundRobin() {
     if (cHead == NULL) {
-        cout << "No processes in the circular linked list." << endl;
+        cout << "Circular linked list is empty." << endl;
         return;
     }
 
     cNode* cCurrent = cHead;
     int tempNumber = procNumber;
-    
-    do {
+    int prevAT;
+    while (cCurrent->cBurstTime > 0 && cCurrent->cArrivalTime != -1){
         if (cCurrent->cArrivalTime <= cTime) {
-
+        	
+        	cCurrent->start = cTime;
+        	prevAT = cCurrent->cArrivalTime;
             if (cCurrent->cBurstTime <= timeQuantum) {
-                cCurrent->start = cTime;
                 cTime += cCurrent->cBurstTime;
                 cCurrent->cArrivalTime = -1;
             } else {
-                cCurrent->start = cTime;
                 cTime += timeQuantum;
                 cCurrent->cBurstTime -= timeQuantum;
             }
         }
         
         if(tempNumber > 0){
-			cCurrent->waitingT += cCurrent->start - cCurrent->cArrivalTime;
+			cCurrent->waitingT += cCurrent->start - prevAT;
 			tempNumber--;
 		}else{
 			cCurrent->waitingT += cCurrent->start - cCurrent->end;
@@ -439,11 +494,15 @@ void roundRobinScheduler() {
 		cCurrent->end = cTime;
         cCurrent = cCurrent->cNext;
 
-    } while (cCurrent->cBurstTime > 0 && cCurrent->cArrivalTime != -1);
+    }
+    
     tempNumber=procNumber;
     while(tempNumber>0){
-    	cout<<"p"<<cCurrent->cProcID<<" = "<<cCurrent->waitingT<<endl;
+    	insertResult(cCurrent->cProcID, cCurrent->waitingT);
+    	totalWaitingTime += cCurrent->waitingT;
     	cCurrent = cCurrent->cNext;
     	tempNumber--;
 	}
+	averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+	pritnResults();
 }
