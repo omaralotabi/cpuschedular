@@ -79,6 +79,8 @@ void nonPrePriority();
 void roundRobin();
 void preSJF();
 void preSJFLogic();
+void prePriority();
+void prePriorityLogic();
 
 
 int main() {
@@ -234,7 +236,7 @@ void selectWhichMethod(){
 	}else if(!preemptiveMode && schedulingMethodNum==4){
 		nonPrePriority();
 	}else if(preemptiveMode && schedulingMethodNum==4){
-		
+		prePriority();
 	}else if(!preemptiveMode && schedulingMethodNum==5){
 		roundRobin();
 	}else if(preemptiveMode && schedulingMethodNum==5){
@@ -538,6 +540,62 @@ void preSJFLogic() {
                 (current->burstTime == selectedProcess->burstTime && current->arrivalTime < selectedProcess->arrivalTime) ||
                 (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority < selectedProcess->priority) ||
 				(current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                selectedProcess = current;
+            }
+        }
+        current = current->next;
+    }
+    
+    if (selectedProcess->procID == prevID){
+    	selectedProcess->burstTime--;
+    	cTime++;
+    	selectedProcess->end++;
+    	if(selectedProcess->burstTime == 0){
+    		selectedProcess->nWT -= selectedProcess->arrivalTime;
+    		totalWaitingTime += selectedProcess->nWT;
+    		insertResult(selectedProcess->procID, selectedProcess->nWT);
+    		removeNode(selectedProcess);
+		}
+	}else{
+		selectedProcess->start = cTime;
+		selectedProcess->burstTime--;
+		cTime++;
+		if(selectedProcess->burstTime == 0){
+    		selectedProcess->nWT -= selectedProcess->arrivalTime;
+    		totalWaitingTime += selectedProcess->nWT;
+    		insertResult(selectedProcess->procID, selectedProcess->nWT);
+    		removeNode(selectedProcess);
+		}
+	}
+	selectedProcess->nWT += selectedProcess->start - selectedProcess->end;
+    selectedProcess->end = cTime;
+    prevID = selectedProcess->procID;
+}
+
+void prePriority(){
+	while(head != NULL){
+	    prePriorityLogic();
+	}
+	
+	emptyLinkedList();
+    readFromFileAndStore();
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    pritnResults();
+}
+
+void prePriorityLogic() {
+    if (head == NULL) {
+        cout << "Linked list is empty." << endl;
+        return;
+    }
+    Node* current = head;
+    Node* selectedProcess = NULL;
+    int prevID = -1;
+    while (current != NULL) {
+        if (current->arrivalTime <= cTime) {
+            if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
+                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
+				(current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
                 selectedProcess = current;
             }
         }
