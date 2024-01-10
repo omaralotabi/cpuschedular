@@ -10,9 +10,12 @@ struct Node {
     int burstTime;
     int arrivalTime;
     int priority;
+    int nWT;
+    int start;
+    int end;
     Node* next;
 
-    Node(int ID, int b, int a, int p) : procID(ID), burstTime(b), arrivalTime(a), priority(p), next(NULL) {}
+    Node(int ID, int b, int a, int p, int n, int s, int e) : procID(ID), burstTime(b), arrivalTime(a), priority(p), nWT(n), start(s), end(e), next(NULL) {}
 };
 
 //Store Results
@@ -33,9 +36,10 @@ struct cNode {
     int start;
     int end;
     int waitingT;
+    int prevAT;
     cNode* cNext;
 
-    cNode(int cID, int cB, int cA, int cP, int cS, int cE, int cW) : cProcID(cID), cBurstTime(cB), cArrivalTime(cA), cPriority(cP), start(cS), end(cE), waitingT(cW), cNext(NULL) {}
+    cNode(int cID, int cB, int cA, int cP, int cS, int cE, int cW, int cPAT) : cProcID(cID), cBurstTime(cB), cArrivalTime(cA), cPriority(cP), start(cS), end(cE), waitingT(cW), prevAT(cPAT), cNext(NULL) {}
 };
 
 
@@ -52,10 +56,11 @@ double averageWaitingTime;
 int cTime;
 int totalWaitingTime = 0;
 int waitingTime = 0;
+int tempNumber;
 
 //Functions Declarations
 void cpuSchedulerSimulator();
-void insertNode(int procID, int burstTime, int arrivalTime, int priority);
+void insertNode(int procID, int burstTime, int arrivalTime, int priority, int nWT, int start, int end);
 void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority, int start, int end, int waitingT);
 void readFromFileAndStore();
 void selectWhichMethod();
@@ -72,6 +77,8 @@ void nonPreSJF();
 void nonPrePriorityLogic();
 void nonPrePriority();
 void roundRobin();
+void preSJF();
+void preSJFLogic();
 
 
 int main() {
@@ -146,8 +153,8 @@ void cpuSchedulerSimulator() {
 }
 
 //Insert From The Input File (Insert Back)
-void insertNode(int procID, int burstTime, int arrivalTime, int priority) {
-    Node* newNode = new Node(procID, burstTime, arrivalTime, priority);
+void insertNode(int procID, int burstTime, int arrivalTime, int priority, int nWT, int start, int end) {
+    Node* newNode = new Node(procID, burstTime, arrivalTime, priority, 0, 0, 0);
     if (head == NULL) {
         head = newNode;
         procNumber++;
@@ -176,8 +183,8 @@ void insertResult(int resultID, int waitingTime) {
 }
 
 //Insert To The Circular Linked List
-void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority, int start, int end, int waitingT) {
-    cNode* newcNode = new cNode(cProcID, cBurstTime, cArrivalTime, cPriority, 0, 0, 0);
+void insertcNode(int cProcID, int cBurstTime, int cArrivalTime, int cPriority, int start, int end, int waitingT, int prevAT) {
+    cNode* newcNode = new cNode(cProcID, cBurstTime, cArrivalTime, cPriority, 0, 0, 0, 0);
     
     if (cHead == NULL) {
         cHead = newcNode;
@@ -205,8 +212,8 @@ void readFromFileAndStore() {
     char colon;
 
     while (inputFile >> burstTime >> colon >> arrivalTime >> colon >> priority) {
-        insertNode(procID, burstTime, arrivalTime, priority);
-        insertcNode(procID, burstTime, arrivalTime, priority, 0, 0, 0);
+        insertNode(procID, burstTime, arrivalTime, priority, 0, 0, 0);
+        insertcNode(procID, burstTime, arrivalTime, priority, 0, 0, 0, 0);
         procID++;
     }
     inputFile.close();
@@ -223,7 +230,7 @@ void selectWhichMethod(){
 	}else if(!preemptiveMode && schedulingMethodNum==3){
         nonPreSJF();
 	}else if(preemptiveMode && schedulingMethodNum==3){
-		
+		preSJF();
 	}else if(!preemptiveMode && schedulingMethodNum==4){
 		nonPrePriority();
 	}else if(preemptiveMode && schedulingMethodNum==4){
@@ -272,12 +279,18 @@ void pritnResults(){
 	if (preemptiveMode && schedulingMethodNum==2){
 		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\nBut Here Is The Non-Preemptive FCFS instade: \n";
 		outputFile<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is ON\nBut Here Is The Non-Preemptive FCFS instade: \n";
+	}else if(!preemptiveMode && schedulingMethodNum==2){
+		cout<<"Scheduling Method:"<< schedulingMethod<<endl;
+        outputFile<<"Scheduling Method:"<< schedulingMethod<<endl;
 	}else if(!preemptiveMode && schedulingMethodNum==5){
-		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\nBut Here Is The Preemptive RR instade: \n";
-		outputFile<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\nBut Here Is The Preemptive RR instade: \n";
+		cout<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\nBut Here Is The Preemptive RR instade: time_quantum = "<<timeQuantum<<endl;
+		outputFile<<"This Metod Can Not Be Ipmlemented While The Preemptive Mode Is OFF\nBut Here Is The Preemptive RR instade: time_quantum = "<<timeQuantum<<endl;
+	}else if(preemptiveMode && schedulingMethodNum==5){
+		cout<<"Scheduling Method:"<< schedulingMethod<<" time_quantum = "<<timeQuantum<<endl;
+        outputFile<<"Scheduling Method:"<< schedulingMethod<<" time_quantum = "<<timeQuantum<<endl;
 	}else{
-		cout<<"Scheduling Method:"<< (preemptiveMode ? "preemptive " : "non-preemptive ")<< schedulingMethod<<"\n";
-        outputFile<<"Scheduling Method:"<< (preemptiveMode ? "preemptive " : "non-preemptive ")<< schedulingMethod<<"\n";
+		cout<<"Scheduling Method:"<< (preemptiveMode ? "preemptive " : "non-preemptive ")<< schedulingMethod<<endl;
+        outputFile<<"Scheduling Method:"<< (preemptiveMode ? "preemptive " : "non-preemptive ")<< schedulingMethod<<endl;
 	}
     cout<<"Process Waiting Times:\n";
     outputFile<<"Process Waiting Times:\n";
@@ -342,7 +355,6 @@ void nonPreSJFLogic() {
         cout << "Linked list is empty." << endl;
         return;
     }
-
     Node* current = head;
     Node* selectedProcess = NULL;
 
@@ -388,10 +400,9 @@ void removeNode( Node* target) {
 
 void nonPrePriorityLogic() {
     if (head == NULL) {
-        std::cout << "Linked list is empty." << endl;
+        cout << "Linked list is empty." << endl;
         return;
     }
-
     Node* current = head;
     Node* selectedProcess = NULL;
 
@@ -467,17 +478,15 @@ void roundRobin() {
         cout << "Circular linked list is empty." << endl;
         return;
     }
-
     cNode* cCurrent = cHead;
-    int tempNumber = procNumber;
-    int prevAT;
+    
     while (cCurrent->cBurstTime > 0 && cCurrent->cArrivalTime != -1){
         if (cCurrent->cArrivalTime <= cTime) {
         	
         	cCurrent->start = cTime;
-        	prevAT = cCurrent->cArrivalTime;
             if (cCurrent->cBurstTime <= timeQuantum) {
                 cTime += cCurrent->cBurstTime;
+                cCurrent->prevAT = cCurrent->cArrivalTime;
                 cCurrent->cArrivalTime = -1;
             } else {
                 cTime += timeQuantum;
@@ -485,19 +494,15 @@ void roundRobin() {
             }
         }
         
-        if(tempNumber > 0){
-			cCurrent->waitingT += cCurrent->start - prevAT;
-			tempNumber--;
-		}else{
-			cCurrent->waitingT += cCurrent->start - cCurrent->end;
-		}
+		cCurrent->waitingT += cCurrent->start - cCurrent->end;
 		cCurrent->end = cTime;
         cCurrent = cCurrent->cNext;
 
     }
+    tempNumber = procNumber;
     
-    tempNumber=procNumber;
     while(tempNumber>0){
+    	cCurrent->waitingT -= cCurrent->prevAT;
     	insertResult(cCurrent->cProcID, cCurrent->waitingT);
     	totalWaitingTime += cCurrent->waitingT;
     	cCurrent = cCurrent->cNext;
@@ -505,4 +510,44 @@ void roundRobin() {
 	}
 	averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
 	pritnResults();
+}
+
+void preSJF(){
+	while(head != NULL){
+	    preSJFLogic();
+	}
+	
+	emptyLinkedList();
+    readFromFileAndStore();
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    pritnResults();
+}
+
+void preSJFLogic() {
+    if (head == NULL) {
+        cout << "Linked list is empty." << endl;
+        return;
+    }
+    Node* current = head;
+    Node* selectedProcess = NULL;
+
+    while (current != NULL) {
+        if (current->arrivalTime <= cTime) {
+            if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
+                (current->burstTime == selectedProcess->burstTime && current->arrivalTime < selectedProcess->arrivalTime) ||
+                (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority < selectedProcess->priority) ||
+				(current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                selectedProcess = current;
+            }
+        }
+        current = current->next;
+    }
+    
+    selectedProcess->burstTime--;
+    cout<<"P"<<selectedProcess->procID<<" has processed for one unit of time\n";
+    if (selectedProcess->burstTime == 0){
+    	cout<<"P"<<selectedProcess->procID<<" is done\n";
+    	removeNode(selectedProcess);
+	}
+    cTime++;
 }
