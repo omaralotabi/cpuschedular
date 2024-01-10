@@ -69,6 +69,7 @@ void sortResults();
 void pritnResults();
 void emptyList();
 void fcfsFunc();
+void fcfsLogic();
 void removeNode( Node* target);
 void emptyLinkedList();
 void emptyCircular();
@@ -352,35 +353,6 @@ void emptyCircular() {
     cHead = NULL;
 }
 
-void nonPreSJFLogic() {
-    if (head == NULL) {
-        cout << "Linked list is empty." << endl;
-        return;
-    }
-    Node* current = head;
-    Node* selectedProcess = NULL;
-
-    while (current != NULL) {
-        if (current->arrivalTime <= cTime) {
-            if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
-                (current->burstTime == selectedProcess->burstTime && current->priority < selectedProcess->priority) ||
-                (current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
-				(current->burstTime == selectedProcess->burstTime && current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
-                selectedProcess = current;
-            }
-        }
-        current = current->next;
-    }
-
-
-    	waitingTime = cTime - selectedProcess->arrivalTime;
-    	insertResult(selectedProcess->procID, waitingTime);
-    	totalWaitingTime +=waitingTime;
-        cTime += selectedProcess->burstTime;
-        removeNode(selectedProcess);
-
-}
-
 void removeNode( Node* target) {
     if (head == target) {
         head = target->next;
@@ -400,55 +372,13 @@ void removeNode( Node* target) {
     procNumber--;
 }
 
-void nonPrePriorityLogic() {
-    if (head == NULL) {
-        cout << "Linked list is empty." << endl;
-        return;
-    }
-    Node* current = head;
-    Node* selectedProcess = NULL;
-
-    while (current != NULL) {
-        if (current->arrivalTime <= cTime) {
-            if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
-                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
-				(current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
-                selectedProcess = current;
-            }
-        }
-        current = current->next;
-    }
-
-
-    	waitingTime = cTime - selectedProcess->arrivalTime;
-    	insertResult(selectedProcess->procID, waitingTime);
-    	totalWaitingTime +=waitingTime;
-        cTime += selectedProcess->burstTime;
-        removeNode(selectedProcess);
-
-}
-
-void fcfsFunc() {
-	if (head == NULL) {
-        cout << "Linked list is empty." << endl;
-        return;
-    }
-    Node* current = head;
-    
-    while (current) {
-        if (current->arrivalTime > cTime) {
-            cTime = current->arrivalTime;
-        }
-
-        waitingTime = cTime - current->arrivalTime;
-        totalWaitingTime += waitingTime;
-        insertResult(current->procID, waitingTime);
-        
-        cTime += current->burstTime;
-        current = current->next;
+void fcfsFunc(){
+	while (head != NULL) {
+        fcfsLogic();
     }
     
-
+    emptyLinkedList();
+    readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
     pritnResults();
 }
@@ -464,12 +394,34 @@ void nonPreSJF(){
     pritnResults();
 }
 
+void preSJF(){
+	while(head != NULL){
+	    preSJFLogic();
+	}
+	
+	emptyLinkedList();
+    readFromFileAndStore();
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    pritnResults();
+}
+
 void nonPrePriority(){
 	while (head != NULL) {
         nonPrePriorityLogic();
     }
     
     emptyLinkedList();
+    readFromFileAndStore();
+    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
+    pritnResults();
+}
+
+void prePriority(){
+	while(head != NULL){
+	    prePriorityLogic();
+	}
+	
+	emptyLinkedList();
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
     pritnResults();
@@ -514,15 +466,81 @@ void roundRobin() {
 	pritnResults();
 }
 
-void preSJF(){
-	while(head != NULL){
-	    preSJFLogic();
+//Logics 
+void fcfsLogic() {
+    if (head == NULL) {
+        cout << "Linked list is empty." << endl;
+        return;
+    }
+    Node* current = head;
+    Node* selectedProcess = NULL;
+
+    while (current != NULL) {
+        if (current->arrivalTime <= cTime) {
+            if (selectedProcess == NULL || current->arrivalTime < selectedProcess->arrivalTime ||
+                (current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
+                selectedProcess = current;
+            }
+        }
+        current = current->next;
+    
 	}
-	
-	emptyLinkedList();
-    readFromFileAndStore();
-    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
+    	waitingTime = cTime - selectedProcess->arrivalTime;
+    	insertResult(selectedProcess->procID, waitingTime);
+    	totalWaitingTime +=waitingTime;
+        cTime += selectedProcess->burstTime;
+        removeNode(selectedProcess);
+}
+
+void nonPreSJFLogic() {
+    if (head == NULL) {
+        cout << "Linked list is empty." << endl;
+        return;
+    }
+    Node* current = head;
+    Node* selectedProcess = NULL;
+
+    while (current != NULL) {
+        if (current->arrivalTime <= cTime) {
+            if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
+                (current->burstTime == selectedProcess->burstTime && current->arrivalTime < selectedProcess->arrivalTime) ||
+                (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority < selectedProcess->priority) ||
+				(current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                selectedProcess = current;
+            }
+        }
+        current = current->next;
+    }
+    	waitingTime = cTime - selectedProcess->arrivalTime;
+    	insertResult(selectedProcess->procID, waitingTime);
+    	totalWaitingTime +=waitingTime;
+        cTime += selectedProcess->burstTime;
+        removeNode(selectedProcess);
+}
+
+void nonPrePriorityLogic() {
+    if (head == NULL) {
+        cout << "Linked list is empty." << endl;
+        return;
+    }
+    Node* current = head;
+    Node* selectedProcess = NULL;
+
+    while (current != NULL) {
+        if (current->arrivalTime <= cTime) {
+            if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
+                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
+				(current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
+                selectedProcess = current;
+            }
+        }
+        current = current->next;
+    }
+    	waitingTime = cTime - selectedProcess->arrivalTime;
+    	insertResult(selectedProcess->procID, waitingTime);
+    	totalWaitingTime +=waitingTime;
+        cTime += selectedProcess->burstTime;
+        removeNode(selectedProcess);
 }
 
 void preSJFLogic() {
@@ -570,17 +588,6 @@ void preSJFLogic() {
 	selectedProcess->nWT += selectedProcess->start - selectedProcess->end;
     selectedProcess->end = cTime;
     prevID = selectedProcess->procID;
-}
-
-void prePriority(){
-	while(head != NULL){
-	    prePriorityLogic();
-	}
-	
-	emptyLinkedList();
-    readFromFileAndStore();
-    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
 }
 
 void prePriorityLogic() {
