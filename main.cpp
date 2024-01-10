@@ -530,7 +530,8 @@ void preSJFLogic() {
     }
     Node* current = head;
     Node* selectedProcess = NULL;
-
+    int prevID = -1;
+    
     while (current != NULL) {
         if (current->arrivalTime <= cTime) {
             if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
@@ -543,11 +544,28 @@ void preSJFLogic() {
         current = current->next;
     }
     
-    selectedProcess->burstTime--;
-    cout<<"P"<<selectedProcess->procID<<" has processed for one unit of time\n";
-    if (selectedProcess->burstTime == 0){
-    	cout<<"P"<<selectedProcess->procID<<" is done\n";
-    	removeNode(selectedProcess);
+    if (selectedProcess->procID == prevID){
+    	selectedProcess->burstTime--;
+    	cTime++;
+    	selectedProcess->end++;
+    	if(selectedProcess->burstTime == 0){
+    		selectedProcess->nWT -= selectedProcess->arrivalTime;
+    		totalWaitingTime += selectedProcess->nWT;
+    		insertResult(selectedProcess->procID, selectedProcess->nWT);
+    		removeNode(selectedProcess);
+		}
+	}else{
+		selectedProcess->start = cTime;
+		selectedProcess->burstTime--;
+		cTime++;
+		if(selectedProcess->burstTime == 0){
+    		selectedProcess->nWT -= selectedProcess->arrivalTime;
+    		totalWaitingTime += selectedProcess->nWT;
+    		insertResult(selectedProcess->procID, selectedProcess->nWT);
+    		removeNode(selectedProcess);
+		}
 	}
-    cTime++;
+	selectedProcess->nWT += selectedProcess->start - selectedProcess->end;
+    selectedProcess->end = cTime;
+    prevID = selectedProcess->procID;
 }
