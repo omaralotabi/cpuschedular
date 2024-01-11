@@ -66,7 +66,7 @@ void readFromFileAndStore();
 void selectWhichMethod();
 void insertResult(int resultID, int waitingTime);
 void sortResults();
-void pritnResults();
+void printResults();
 void emptyList();
 void fcfsFunc();
 void fcfsLogic();
@@ -245,7 +245,7 @@ void selectWhichMethod(){
 	}
 }
 
-// Sort The Results Ascending Using BubbleSort Which We Learned In The Algorthim Course
+// Sort The Results Ascending Using BubbleSort Which We Learned In The Algorthims Course
 void sortResults() {
     if (!resultHead || !resultHead->resultNext) {
         return;
@@ -273,7 +273,7 @@ void sortResults() {
     } while (swapped);
 }
 
-void pritnResults(){
+void printResults(){
 	sortResults();
 	
 	Result* resultCurrent = resultHead;
@@ -380,7 +380,7 @@ void fcfsFunc(){
     emptyLinkedList();
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
+    printResults();
 }
 
 void nonPreSJF(){
@@ -391,7 +391,7 @@ void nonPreSJF(){
     emptyLinkedList();
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
+    printResults();
 }
 
 void preSJF(){
@@ -402,7 +402,7 @@ void preSJF(){
 	emptyLinkedList();
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
+    printResults();
 }
 
 void nonPrePriority(){
@@ -413,7 +413,7 @@ void nonPrePriority(){
     emptyLinkedList();
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
+    printResults();
 }
 
 void prePriority(){
@@ -424,7 +424,7 @@ void prePriority(){
 	emptyLinkedList();
     readFromFileAndStore();
     averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    pritnResults();
+    printResults();
 }
 
 void roundRobin() {
@@ -463,7 +463,7 @@ void roundRobin() {
     	tempNumber--;
 	}
 	averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-	pritnResults();
+	printResults();
 }
 
 //Logics 
