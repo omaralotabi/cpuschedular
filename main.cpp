@@ -68,20 +68,15 @@ void insertResult(int resultID, int waitingTime);
 void sortResults();
 void printResults();
 void emptyList();
-void fcfsFunc();
-void fcfsLogic();
 void removeNode( Node* target);
 void emptyLinkedList();
 void emptyCircular();
-void nonPreSJFLogic();
-void nonPreSJF();
-void nonPrePriorityLogic();
-void nonPrePriority();
+void nonPreemptives();
+void nonPreemptivesLogic();
+void preemptives();
+void preemptivesLogic();
 void roundRobin();
-void preSJF();
-void preSJFLogic();
-void prePriority();
-void prePriorityLogic();
+
 
 
 int main() {
@@ -227,17 +222,17 @@ void selectWhichMethod(){
 	if(schedulingMethodNum==1){
 		cout<<"None Of the Method Were Chosen";
 	}else if(!preemptiveMode && schedulingMethodNum==2){
-		fcfsFunc();
+		nonPreemptives();
 	}else if(preemptiveMode && schedulingMethodNum==2){
-		fcfsFunc();
+		nonPreemptives();
 	}else if(!preemptiveMode && schedulingMethodNum==3){
-        nonPreSJF();
+        nonPreemptives();
 	}else if(preemptiveMode && schedulingMethodNum==3){
-		preSJF();
+		preemptives();
 	}else if(!preemptiveMode && schedulingMethodNum==4){
-		nonPrePriority();
+		nonPreemptives();
 	}else if(preemptiveMode && schedulingMethodNum==4){
-		prePriority();
+		preemptives();
 	}else if(!preemptiveMode && schedulingMethodNum==5){
 		roundRobin();
 	}else if(preemptiveMode && schedulingMethodNum==5){
@@ -372,9 +367,9 @@ void removeNode( Node* target) {
     procNumber--;
 }
 
-void fcfsFunc(){
+void nonPreemptives(){
 	while (head != NULL) {
-        fcfsLogic();
+        nonPreemptivesLogic();
     }
     
     emptyLinkedList();
@@ -383,20 +378,9 @@ void fcfsFunc(){
     printResults();
 }
 
-void nonPreSJF(){
-	while (head != NULL) {
-        nonPreSJFLogic();
-    }
-    
-    emptyLinkedList();
-    readFromFileAndStore();
-    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    printResults();
-}
-
-void preSJF(){
+void preemptives(){
 	while(head != NULL){
-	    preSJFLogic();
+	    preemptivesLogic();
 	}
 	
 	emptyLinkedList();
@@ -405,27 +389,6 @@ void preSJF(){
     printResults();
 }
 
-void nonPrePriority(){
-	while (head != NULL) {
-        nonPrePriorityLogic();
-    }
-    
-    emptyLinkedList();
-    readFromFileAndStore();
-    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    printResults();
-}
-
-void prePriority(){
-	while(head != NULL){
-	    prePriorityLogic();
-	}
-	
-	emptyLinkedList();
-    readFromFileAndStore();
-    averageWaitingTime = static_cast<double>(totalWaitingTime) / procNumber;
-    printResults();
-}
 
 void roundRobin() {
     if (cHead == NULL) {
@@ -466,84 +429,8 @@ void roundRobin() {
 	printResults();
 }
 
-//Logics 
-void fcfsLogic() {
-    if (head == NULL) {
-        cout << "Linked list is empty." << endl;
-        return;
-    }
-    Node* current = head;
-    Node* selectedProcess = NULL;
-
-    while (current != NULL) {
-        if (current->arrivalTime <= cTime) {
-            if (selectedProcess == NULL || current->arrivalTime < selectedProcess->arrivalTime ||
-                (current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
-                selectedProcess = current;
-            }
-        }
-        current = current->next;
-    
-	}
-    	waitingTime = cTime - selectedProcess->arrivalTime;
-    	insertResult(selectedProcess->procID, waitingTime);
-    	totalWaitingTime +=waitingTime;
-        cTime += selectedProcess->burstTime;
-        removeNode(selectedProcess);
-}
-
-void nonPreSJFLogic() {
-    if (head == NULL) {
-        cout << "Linked list is empty." << endl;
-        return;
-    }
-    Node* current = head;
-    Node* selectedProcess = NULL;
-
-    while (current != NULL) {
-        if (current->arrivalTime <= cTime) {
-            if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
-                (current->burstTime == selectedProcess->burstTime && current->arrivalTime < selectedProcess->arrivalTime) ||
-                (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority < selectedProcess->priority) ||
-				(current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
-                selectedProcess = current;
-            }
-        }
-        current = current->next;
-    }
-    	waitingTime = cTime - selectedProcess->arrivalTime;
-    	insertResult(selectedProcess->procID, waitingTime);
-    	totalWaitingTime +=waitingTime;
-        cTime += selectedProcess->burstTime;
-        removeNode(selectedProcess);
-}
-
-void nonPrePriorityLogic() {
-    if (head == NULL) {
-        cout << "Linked list is empty." << endl;
-        return;
-    }
-    Node* current = head;
-    Node* selectedProcess = NULL;
-
-    while (current != NULL) {
-        if (current->arrivalTime <= cTime) {
-            if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
-                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
-				(current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
-                selectedProcess = current;
-            }
-        }
-        current = current->next;
-    }
-    	waitingTime = cTime - selectedProcess->arrivalTime;
-    	insertResult(selectedProcess->procID, waitingTime);
-    	totalWaitingTime +=waitingTime;
-        cTime += selectedProcess->burstTime;
-        removeNode(selectedProcess);
-}
-
-void preSJFLogic() {
+//Logics part
+void preemptivesLogic() {
     if (head == NULL) {
         cout << "Linked list is empty." << endl;
         return;
@@ -551,18 +438,32 @@ void preSJFLogic() {
     Node* current = head;
     Node* selectedProcess = NULL;
     int prevID = -1;
-    
-    while (current != NULL) {
-        if (current->arrivalTime <= cTime) {
-            if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
-                (current->burstTime == selectedProcess->burstTime && current->arrivalTime < selectedProcess->arrivalTime) ||
-                (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority < selectedProcess->priority) ||
-				(current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
-                selectedProcess = current;
+    if (preemptiveMode && schedulingMethodNum==3){
+        //Select For Preemptive SJF
+        while (current != NULL) {
+            if (current->arrivalTime <= cTime) {
+                if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
+                    (current->burstTime == selectedProcess->burstTime && current->arrivalTime < selectedProcess->arrivalTime) ||
+                    (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority < selectedProcess->priority) ||
+				    (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                    selectedProcess = current;
+                }
             }
+            current = current->next;
         }
-        current = current->next;
-    }
+	}else if(preemptiveMode && schedulingMethodNum==4){
+		//Select For Preemptive Priority
+        while (current != NULL) {
+            if (current->arrivalTime <= cTime) {
+                if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
+                    (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
+				    (current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
+                    selectedProcess = current;
+                }
+            }
+            current = current->next;
+        }
+	}
     
     if (selectedProcess->procID == prevID){
     	selectedProcess->burstTime--;
@@ -590,47 +491,57 @@ void preSJFLogic() {
     prevID = selectedProcess->procID;
 }
 
-void prePriorityLogic() {
+void nonPreemptivesLogic() {
     if (head == NULL) {
         cout << "Linked list is empty." << endl;
         return;
     }
     Node* current = head;
     Node* selectedProcess = NULL;
-    int prevID = -1;
-    while (current != NULL) {
-        if (current->arrivalTime <= cTime) {
-            if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
-                (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
-				(current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
-                selectedProcess = current;
+    if (schedulingMethodNum==2){
+    	//Select For FCFS
+		while (current != NULL) {
+            if (current->arrivalTime <= cTime) {
+                if (selectedProcess == NULL || current->arrivalTime < selectedProcess->arrivalTime ||
+                    (current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
+                    selectedProcess = current;
+                }
             }
-        }
-        current = current->next;
-    }
+            current = current->next;
     
-    if (selectedProcess->procID == prevID){
-    	selectedProcess->burstTime--;
-    	cTime++;
-    	selectedProcess->end++;
-    	if(selectedProcess->burstTime == 0){
-    		selectedProcess->nWT -= selectedProcess->arrivalTime;
-    		totalWaitingTime += selectedProcess->nWT;
-    		insertResult(selectedProcess->procID, selectedProcess->nWT);
-    		removeNode(selectedProcess);
-		}
-	}else{
-		selectedProcess->start = cTime;
-		selectedProcess->burstTime--;
-		cTime++;
-		if(selectedProcess->burstTime == 0){
-    		selectedProcess->nWT -= selectedProcess->arrivalTime;
-    		totalWaitingTime += selectedProcess->nWT;
-    		insertResult(selectedProcess->procID, selectedProcess->nWT);
-    		removeNode(selectedProcess);
-		}
+	    }
+	}else if(!preemptiveMode && schedulingMethodNum==3){
+		//Select For Non-Preemptive SJF
+        while (current != NULL) {
+            if (current->arrivalTime <= cTime) {
+                if (selectedProcess == NULL || current->burstTime < selectedProcess->burstTime ||
+                    (current->burstTime == selectedProcess->burstTime && current->arrivalTime < selectedProcess->arrivalTime) ||
+                    (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority < selectedProcess->priority) ||
+				    (current->burstTime == selectedProcess->burstTime && current->arrivalTime == selectedProcess->arrivalTime && current->priority == selectedProcess->priority && current->procID < selectedProcess->procID)) {
+                    selectedProcess = current;
+                }
+            }
+            current = current->next;
+        }
+	}else if(!preemptiveMode && schedulingMethodNum==4){
+	    //Select For Non-Priority
+        while (current != NULL) {
+            if (current->arrivalTime <= cTime) {
+                if (selectedProcess == NULL || (current->priority < selectedProcess->priority) ||
+                    (current->priority == selectedProcess->priority && current->arrivalTime < selectedProcess->arrivalTime) ||
+				    (current->priority == selectedProcess->priority && current->arrivalTime == selectedProcess->arrivalTime && current->procID < selectedProcess->procID)) {
+                    selectedProcess = current;
+                }
+            }
+            current = current->next;
+        }
 	}
-	selectedProcess->nWT += selectedProcess->start - selectedProcess->end;
-    selectedProcess->end = cTime;
-    prevID = selectedProcess->procID;
+
+
+    	waitingTime = cTime - selectedProcess->arrivalTime;
+    	insertResult(selectedProcess->procID, waitingTime);
+    	totalWaitingTime +=waitingTime;
+        cTime += selectedProcess->burstTime;
+        removeNode(selectedProcess);
+
 }
